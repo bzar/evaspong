@@ -2,7 +2,6 @@
 #include <Ecore.h>
 #include <Ecore_Evas.h>
 #include <string>
-#include <sstream>
 
 int const WINDOW_WIDTH = 800;
 int const WINDOW_HEIGHT = 480;
@@ -76,8 +75,6 @@ int main(int argc, char *argv[])
   }
 
   canvas = ecore_evas_get(window);
-  evas_output_size_set(canvas, WINDOW_WIDTH, WINDOW_HEIGHT);
-  evas_output_viewport_set(canvas, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
   Evas_Object* bg = evas_object_rectangle_add(ecore_evas_get(window));
   evas_object_color_set(bg, 0, 0, 0, 255);
@@ -204,18 +201,24 @@ void handleGoals(Ball& ball, Score& score)
                      WINDOW_HEIGHT/2 - BALL_HEIGHT/2);
     score.right += 1;
     
-    std::ostringstream ss;
-    ss << score.right;
-    evas_object_text_text_set(score.rightText, ss.str().c_str());
+    if(score.right < 10000) 
+    {
+      char str[4];
+      eina_convert_itoa(score.right, str);
+      evas_object_text_text_set(score.rightText, str);
+    }
   }
   else if(bx + ball.velocity.x > MAX_X)
   {
     evas_object_move(ball.obj, WINDOW_WIDTH/2 - BALL_WIDTH/2, by);
     score.left += 1;
     
-    std::ostringstream ss;
-    ss << score.left;
-    evas_object_text_text_set(score.leftText, ss.str().c_str());
+    if(score.left < 10000)
+    {
+      char str[4];
+      eina_convert_itoa(score.left, str);
+      evas_object_text_text_set(score.leftText, str);
+    }
   }
 }
 
