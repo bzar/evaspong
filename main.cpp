@@ -1,6 +1,7 @@
 #include <Evas.h>
 #include <Ecore.h>
 #include <Ecore_Evas.h>
+#include <Emotion.h>
 #include <string>
 
 int const WINDOW_WIDTH = 800;
@@ -56,6 +57,8 @@ struct Data
   Bat rightBat;
   Ball ball;
   Score score;
+  Emotion_Object* pingSound;
+  Emotion_Object* pongSound;
 };
 
 Eina_Bool tick(void *d);
@@ -119,6 +122,14 @@ int main(int argc, char *argv[])
   evas_object_show(leftText);
   evas_object_show(rightText);
   
+  Emotion_Object pingSound = emotion_object_add(canvas);
+  Emotion_Object pongSound = emotion_object_add(canvas);
+  emotion_object_init(pingSound);
+  emotion_object_init(pongSound);
+  emotion_object_video_mute_set(pingSound, Eina_True);
+  emotion_object_video_mute_set(pongSound, Eina_True);
+  emotion_object_file_set(pingSound, "sfx/ping.wav");
+  emotion_object_file_set(pongSound, "sfx/pong.wav");
   
   ecore_evas_show(window);
   
@@ -126,7 +137,8 @@ int main(int argc, char *argv[])
     {leftBat, {0, 0}}, 
     {rightBat, {0, 0}}, 
     {ball, {BALL_SPEED, BALL_SPEED}},
-    {0, 0, leftText, rightText}
+    {0, 0, leftText, rightText},
+    pingSound, pongSound
   };
   
   ecore_animator_frametime_set(1.0/60);
@@ -171,7 +183,7 @@ void bounceWalls(Ball& ball)
   evas_object_move(ball.obj, bx, by);
 }
 
-void bounceBat(Ball& ball, Bat& bat)
+void bounceBat(Ball& ball, Bat& bat, Emotion_Object* hitSound)
 {
   Evas_Coord x, y, w, h;
   evas_object_geometry_get(ball.obj, &x, &y, &w, &h);
@@ -187,6 +199,7 @@ void bounceBat(Ball& ball, Bat& bat)
     x = 2 *  bx - x + (ball.velocity.x > 0 ? -ball.velocity.x : ball.velocity.x);
     ball.velocity.x = -ball.velocity.x;
     ball.velocity.y = BALL_SPEED * ((y + h/2) - (by + bh/2)) / (bh / 2);
+    emotion_object_play_set(hitSound, Eina_True);
   }
 }
 
@@ -244,8 +257,8 @@ Eina_Bool tick(void *d)
   y = y < 0 ? 0 : y + h > WINDOW_HEIGHT ? WINDOW_HEIGHT - h : y;
   evas_object_move(data->rightBat.obj, x, y);
   
-  bounceBat(data->ball, data->leftBat);
-  bounceBat(data->ball, data->rightBat);
+  bounceBat(data->ball, data->leftBat, data->pingSound);
+  bounceBat(data->ball, data->rightBat, data->pongSound);
   bounceWalls(data->ball);
   handleGoals(data->ball, data->score);
   
