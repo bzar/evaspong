@@ -20,6 +20,9 @@ std::string const KEY_DOWN_LEFT = "z";
 std::string const KEY_UP_RIGHT = "Up";
 std::string const KEY_DOWN_RIGHT = "Down";
 
+std::string const KEY_FULLSCREEN = "f";
+std::string const KEY_QUIT = "Escape";
+
 struct Vec2D
 {
   double x;
@@ -48,7 +51,7 @@ struct Score
 
 struct Data
 {
-  double totalTime;
+  Ecore_Evas *window;
   Bat leftBat;
   Bat rightBat;
   Ball ball;
@@ -119,7 +122,7 @@ int main(int argc, char *argv[])
   
   ecore_evas_show(window);
   
-  Data data = { 0.0, 
+  Data data = { window, 
     {leftBat, {0, 0}}, 
     {rightBat, {0, 0}}, 
     {ball, {BALL_SPEED, BALL_SPEED}},
@@ -136,7 +139,7 @@ int main(int argc, char *argv[])
 
   if(timer)
     ecore_animator_del(timer);
-  
+
   ecore_evas_free(window);
 
   ecore_evas_shutdown();
@@ -225,7 +228,6 @@ void handleGoals(Ball& ball, Score& score)
 Eina_Bool tick(void *d)
 {
   Data* data = static_cast<Data*>(d);
-  data->totalTime += ecore_animator_frametime_get();
 
   Evas_Coord x, y, w, h;
   
@@ -271,6 +273,16 @@ void keyDown(void *d, Evas *e, Evas_Object *o, void *event_info)
   {
     data->leftBat.velocity.y = BAT_SPEED;
   }
+  else if(event->keyname == KEY_QUIT)
+  {
+    ecore_main_loop_quit();
+  }
+  else if(event->keyname == KEY_FULLSCREEN)
+  {
+    Eina_Bool fullscreen = ecore_evas_fullscreen_get(data->window);
+    ecore_evas_fullscreen_set(data->window, !fullscreen);
+  }
+  
 }
 
 void keyUp(void *d, Evas *e, Evas_Object *o, void *event_info)
